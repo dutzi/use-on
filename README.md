@@ -21,6 +21,8 @@ Can you tell why?
 
 ## Usage
 
+### On your machine
+
 Clone the repo, then:
 
 ```sh
@@ -30,4 +32,10 @@ npm start   # yarn start
 
 Then follow the instructions you see on the page, you will see my approach failing.
 
-To see a _working_ (production) demo, check out [this repo's CodeSanbox](https://codesandbox.io/s/github/dutzi/use-on).
+### On CodeSandbox
+
+Visit [this repo's CodeSandbox](https://codesandbox.io/s/github/dutzi/use-on), to see it _failing_ (as you did if you ran it on your machine).
+
+### On Vercel
+
+Visit [this repo's Vercel deployment](https://use-on.vercel.app/), to see it _running fine_.
