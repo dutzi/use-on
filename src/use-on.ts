@@ -12,8 +12,8 @@ function useRerender() {
   const [count, setCounter] = useState(0);
 
   const rerender = useCallback(() => {
-    setCounter(count + 1);
-  }, [count]);
+    setCounter((count) => count + 1);
+  }, []);
 
   return useMemo(() => ({ rerender, count }), [rerender, count]);
 }
@@ -23,8 +23,11 @@ export default function useOn() {
   const callbackRef = useRef<Callback>();
   const eventNameRef = useRef<string>();
   const dispatcherRef = useRef<any>();
+  const logicRef = useRef<Methods>();
   const prevIsReady = useRef(false);
   const { rerender, count } = useRerender();
+  const rerenderRef = useRef<any>();
+  rerenderRef.current = rerender;
 
   const isReady = useCallback(() => {
     return (
@@ -52,44 +55,42 @@ export default function useOn() {
     return () => unloadRef.current?.();
   }, [isReady, count]);
 
-  return useMemo(
-    () =>
-      ({
-        who: function (dispatcher) {
-          const isChanged = dispatcherRef.current !== dispatcher;
-          dispatcherRef.current = dispatcher;
+  logicRef.current = logicRef.current ?? {
+    who: function (dispatcher) {
+      const isChanged = dispatcherRef.current !== dispatcher;
+      dispatcherRef.current = dispatcher;
 
-          if (prevIsReady.current !== isReady() || isChanged) {
-            prevIsReady.current = isReady();
-            rerender();
-          }
+      if (prevIsReady.current !== isReady() || isChanged) {
+        prevIsReady.current = isReady();
+        rerenderRef.current();
+      }
 
-          return this;
-        },
+      return this;
+    },
 
-        when: function (eventName) {
-          const isChanged = eventNameRef.current !== eventName;
-          eventNameRef.current = eventName;
+    when: function (eventName) {
+      const isChanged = eventNameRef.current !== eventName;
+      eventNameRef.current = eventName;
 
-          if (prevIsReady.current !== isReady() || isChanged) {
-            prevIsReady.current = isReady();
-            rerender();
-          }
+      if (prevIsReady.current !== isReady() || isChanged) {
+        prevIsReady.current = isReady();
+        rerenderRef.current();
+      }
 
-          return this;
-        },
+      return this;
+    },
 
-        what: function (callback) {
-          callbackRef.current = callback;
+    what: function (callback) {
+      callbackRef.current = callback;
 
-          if (prevIsReady.current !== isReady()) {
-            prevIsReady.current = isReady();
-            rerender();
-          }
+      if (prevIsReady.current !== isReady()) {
+        prevIsReady.current = isReady();
+        rerenderRef.current();
+      }
 
-          return this;
-        },
-      } as Methods),
-    [rerender, isReady]
-  ) as Methods;
+      return this;
+    },
+  };
+
+  return logicRef.current;
 }
