@@ -2,13 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 type Callback = (...rest: any) => any;
 
-interface HiddenFields {
-  // _eventName: string | null;
-  // _dispatcher: any | null;
-  // _callback: Callback | null;
-  // _setupListener: () => void | null;
-}
-
 interface Methods {
   who: (dispatcher: any) => Methods;
   when: (eventName: string) => Methods;
@@ -95,7 +88,7 @@ export default function useOn() {
 
           return this;
         },
-      } as HiddenFields & Methods),
+      } as Methods),
     [rerender, isReady]
   ) as Methods;
 }
