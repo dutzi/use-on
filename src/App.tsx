@@ -20,9 +20,9 @@ export default function App() {
         - You should see "keydown handler!" printed in the console
 
         4. Click on "Listen to MouseDown"
-        5. Click anywhere
+        5. Click anywhere...
 
-        - You should see "mousedown handler!" printed in the console, but they don't (in production)
+        - You should see "mousedown handler!" printed in the console, but you won't (in development)
       `
             .replace(/  +/g, '')
             .trim()}
