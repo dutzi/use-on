@@ -2,7 +2,7 @@
 
 This repo demonstrates some React weirdness.
 
-I was trying to implment a hook that allows me to do the following:
+I was trying to implement a hook that allows me to do the following:
 
 ```js
 useOn()
@@ -31,6 +31,12 @@ npm start   # yarn start
 ```
 
 Then follow the instructions you see on the page, you will see my approach failing.
+
+To see it running fine, you'll need to:
+
+```sh
+npm run start:prod   # yarn start:prod
+```
 
 ### On CodeSandbox
 
