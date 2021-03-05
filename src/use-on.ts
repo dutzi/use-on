@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 type Callback = (...rest: any) => any;
 
 interface HiddenFields {
-  _eventName: string | null;
-  _dispatcher: any | null;
-  _callback: Callback | null;
-  _setupListener: () => void | null;
+  // _eventName: string | null;
+  // _dispatcher: any | null;
+  // _callback: Callback | null;
+  // _setupListener: () => void | null;
 }
 
 interface Methods {
@@ -15,72 +15,94 @@ interface Methods {
   what: (callback: Callback) => Methods;
 }
 
+function useRerender() {
+  const [count, setCounter] = useState(0);
+
+  return useCallback(() => {
+    setCounter((counter) => counter + 1);
+  }, [count]); // eslint-disable-line
+}
+
 export default function useOn() {
   const unloadRef = useRef<Function>();
+  const callbackRef = useRef<Callback>();
+  const eventNameRef = useRef<string>();
+  const dispatcherRef = useRef<any>();
+  const prevIsReady = useRef(false);
+  const rerender = useRerender();
+
+  function isReady() {
+    return (
+      !!dispatcherRef.current && !!eventNameRef.current && !!callbackRef.current
+    );
+  }
 
   useEffect(() => {
-    return () => unloadRef.current?.(); // eslint-disable-line
+    console.log('setup-listener');
+
+    // if (unloadRef.current) {
+    //   unloadRef.current();
+    // }
+    debugger;
+
+    if (isReady()) {
+      const dispatcher = dispatcherRef.current;
+      const eventName = eventNameRef.current;
+      const callback = callbackRef.current;
+
+      console.log('adding listener', eventName, callback);
+      dispatcher.addEventListener(eventName, callback);
+
+      unloadRef.current = () => {
+        console.log('removing listener', eventName, callback);
+        dispatcher.removeEventListener(eventName, callback);
+      };
+    }
+
+    prevIsReady.current = isReady();
+
+    return () => unloadRef.current?.();
   }, []);
 
   return useMemo(
     () =>
       ({
-        _eventName: null,
-        _dispatcher: window,
-        _callback: null,
-
-        _setupListener: function () {
-          console.log("setup-listener");
-
-          if (unloadRef.current) {
-            unloadRef.current();
-          }
-
-          const callbackWrapper = () => {
-            this._callback?.();
-          };
-
-          if (this._dispatcher && this._eventName) {
-            const dispatcher = this._dispatcher;
-            const eventName = this._eventName;
-            console.log("adding listener", eventName, callbackWrapper);
-            dispatcher.addEventListener(eventName, callbackWrapper);
-
-            unloadRef.current = () => {
-              console.log("removing listener", eventName, callbackWrapper);
-              dispatcher.removeEventListener(eventName, callbackWrapper);
-            };
-          }
-        },
-
         who: function (dispatcher) {
-          if (this._dispatcher === dispatcher) {
-            return this;
-          }
+          const isChanged = dispatcherRef.current !== dispatcher;
+          dispatcherRef.current = dispatcher;
 
-          this._dispatcher = dispatcher;
-          this._setupListener();
+          if (prevIsReady.current !== isReady() || isChanged) {
+            prevIsReady.current = isReady();
+            rerender();
+          }
 
           return this;
         },
 
         when: function (eventName) {
-          if (this._eventName === eventName) {
-            return this;
-          }
+          debugger;
+          const isChanged = eventNameRef.current !== eventName;
+          eventNameRef.current = eventName;
 
-          this._eventName = eventName;
-          this._setupListener();
+          if (prevIsReady.current !== isReady() || isChanged) {
+            prevIsReady.current = isReady();
+            rerender();
+          }
+          // this._setupListener();
 
           return this;
         },
 
         what: function (callback: Callback) {
-          this._callback = callback;
+          callbackRef.current = callback;
+
+          if (prevIsReady.current !== isReady()) {
+            rerender();
+          }
 
           return this;
         },
       } as HiddenFields & Methods),
-    []
+    [rerender]
   ) as Methods;
 }
