@@ -3,7 +3,7 @@ import useOn from './use-on';
 
 export default function ListenerComponent() {
   const [eventName, setEventName] = useState('keydown');
-  console.log(eventName);
+
   useOn()
     .who(window)
     .when(eventName)

@@ -79,10 +79,11 @@ export default function useOn() {
           return this;
         },
 
-        what: function (callback: Callback) {
+        what: function (callback) {
           callbackRef.current = callback;
 
           if (prevIsReady.current !== isReady()) {
+            prevIsReady.current = isReady();
             rerender();
           }
 
