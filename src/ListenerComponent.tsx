@@ -8,7 +8,7 @@ export default function ListenerComponent() {
     .who(window)
     .when(eventName)
     .what(() => {
-      console.log(`${eventName} handler`);
+      console.log(`${eventName} handler!`);
     });
 
   function handleToggleEventName() {
