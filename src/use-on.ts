@@ -18,9 +18,11 @@ interface Methods {
 function useRerender() {
   const [count, setCounter] = useState(0);
 
-  return useCallback(() => {
-    setCounter((counter) => counter + 1);
-  }, [count]); // eslint-disable-line
+  const rerender = useCallback(() => {
+    setCounter(count + 1);
+  }, [count]);
+
+  return useMemo(() => ({ rerender, count }), [rerender, count]);
 }
 
 export default function useOn() {
@@ -29,22 +31,15 @@ export default function useOn() {
   const eventNameRef = useRef<string>();
   const dispatcherRef = useRef<any>();
   const prevIsReady = useRef(false);
-  const rerender = useRerender();
+  const { rerender, count } = useRerender();
 
-  function isReady() {
+  const isReady = useCallback(() => {
     return (
       !!dispatcherRef.current && !!eventNameRef.current && !!callbackRef.current
     );
-  }
+  }, []);
 
   useEffect(() => {
-    console.log('setup-listener');
-
-    // if (unloadRef.current) {
-    //   unloadRef.current();
-    // }
-    debugger;
-
     if (isReady()) {
       const dispatcher = dispatcherRef.current;
       const eventName = eventNameRef.current;
@@ -62,7 +57,7 @@ export default function useOn() {
     prevIsReady.current = isReady();
 
     return () => unloadRef.current?.();
-  }, []);
+  }, [isReady, count]);
 
   return useMemo(
     () =>
@@ -80,7 +75,6 @@ export default function useOn() {
         },
 
         when: function (eventName) {
-          debugger;
           const isChanged = eventNameRef.current !== eventName;
           eventNameRef.current = eventName;
 
@@ -88,7 +82,6 @@ export default function useOn() {
             prevIsReady.current = isReady();
             rerender();
           }
-          // this._setupListener();
 
           return this;
         },
@@ -103,6 +96,6 @@ export default function useOn() {
           return this;
         },
       } as HiddenFields & Methods),
-    [rerender]
+    [rerender, isReady]
   ) as Methods;
 }
